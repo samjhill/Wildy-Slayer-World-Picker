@@ -141,7 +141,11 @@ public class RiskScorer
 		{
 			score += activityPenalty(world.getActivity());
 		}
-		score += observationAdjustment(world.getId(), observations, now);
+		score += observationAdjustment(world.getId(), observations, config, now);
+		if (config.preferOffPeak())
+		{
+			score += TimeHeuristics.offPeakPenalty(now, world.getLocation());
+		}
 		if (blacklistedWorlds != null && blacklistedWorlds.contains(world.getId()))
 		{
 			score += RiskConfig.BLACKLIST_PENALTY;
@@ -169,14 +173,15 @@ public class RiskScorer
 		return 0;
 	}
 
-	private int observationAdjustment(int worldId, List<WorldObservation> observations, Instant now)
+	private int observationAdjustment(int worldId, List<WorldObservation> observations, WildySlayerWorldPickerConfig config, Instant now)
 	{
+		int decayMin = config != null ? Math.max(1, config.observationDecayMinutes()) : RiskConfig.OBSERVATION_DECAY_MINUTES;
 		int adj = 0;
 		for (WorldObservation o : observations)
 		{
 			if (o.getWorldId() != worldId) continue;
 			long minutes = TimeHeuristics.minutesSince(o.getObservedAt(), now);
-			if (minutes < 0 || minutes > RiskConfig.OBSERVATION_DECAY_MINUTES) continue;
+			if (minutes < 0 || minutes > decayMin) continue;
 
 			switch (o.getType())
 			{

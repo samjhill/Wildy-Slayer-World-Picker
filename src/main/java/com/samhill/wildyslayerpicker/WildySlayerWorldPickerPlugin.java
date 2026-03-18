@@ -61,14 +61,18 @@ public class WildySlayerWorldPickerPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		observationStore.load();
+		blacklistedWorlds.clear();
+		blacklistedWorlds.addAll(observationStore.getBlacklistedWorlds());
 		panel = new WildySlayerWorldPickerPanel(
 			client,
 			observationStore,
 			refreshCoordinator,
 			riskScorer,
 			config,
+			blacklistedWorlds,
 			this::refreshAndRecompute,
-			this::recomputeAndUpdatePanel
+			this::recomputeAndUpdatePanel,
+			this::onBlacklistChanged
 		);
 
 		NavigationButton.NavigationButtonBuilder navBuilder = NavigationButton.builder()
@@ -101,6 +105,12 @@ public class WildySlayerWorldPickerPlugin extends Plugin
 			clientToolbar.removeNavigation(navButton);
 		}
 		panel = null;
+	}
+
+	private void onBlacklistChanged()
+	{
+		observationStore.setBlacklistedWorlds(blacklistedWorlds);
+		recomputeAndUpdatePanel();
 	}
 
 	private void refreshAndRecompute()

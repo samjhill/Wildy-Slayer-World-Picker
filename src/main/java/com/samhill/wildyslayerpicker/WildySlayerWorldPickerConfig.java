@@ -68,6 +68,16 @@ public interface WildySlayerWorldPickerConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "observationDecayMinutes",
+		name = "Observation decay (minutes)",
+		description = "Observations older than this are ignored for scoring and can be cleared"
+	)
+	default int observationDecayMinutes()
+	{
+		return 180;
+	}
+
+	@ConfigItem(
 		keyName = "debugMode",
 		name = "Debug mode",
 		description = "Show score breakdown and logs"
